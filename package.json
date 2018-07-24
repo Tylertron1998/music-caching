@@ -1,0 +1,23 @@
+{
+  "name": "MusicCaching",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "github:discordjs/discord.js",
+    "ffmpeg": "0.0.4",
+    "ffmpeg-binaries": "^4.0.0",
+    "klasa": "github:dirigeants/klasa",
+    "node-opus": "^0.3.0",
+    "opusscript": "0.0.6",
+    "prism-media": "github:hydrabolt/prism-media#muxers",
+    "rethinkdbdash": "^2.3.31",
+    "ytdl-core": "^0.21.0"
+  }
+}
