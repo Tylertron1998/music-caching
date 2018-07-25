@@ -105,9 +105,9 @@ class AudioManager {
 
 		if (!downCoder) {
 			if (this.threads.length < this.maxThreads) {
-				this.client.console.log([`Creating new thread. Current thread count: ${this.threads.length}.`], 'thread');
+				this.client.console.write([`Creating new thread. Current thread count: ${this.threads.length}.`], 'thread');
 				const forked = fork(join(process.cwd(), 'src/classes/DownCoder'), [], { stdio: [process.stdin, process.stdout, process.stderr, 'ipc', ...pipeArgs] });
-				const index = this.threads.push({ thread: forked, newPipes }) - 1;
+				const index = this.threads.push({ thread: forked, openPipes: newPipes }) - 1;
 				forked.on('message', message => {
 					if (message.done) {
 						this.threads[index].openPipes.push(message.pipeIndex);
@@ -154,6 +154,7 @@ class AudioManager {
 	}
 
 	get cacheSize() {
+		if (!this.cache.size) return 0;
 		let size;
 		for (const data of this.cache.values()) {
 			size = data.reduce((acc, curr) => acc + curr.byteLength, 0);
