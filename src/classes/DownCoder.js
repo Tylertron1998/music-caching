@@ -2,13 +2,14 @@ const prism = require('prism-media');
 const ytdl = require('ytdl-core');
 const rethink = require('rethinkdbdash')();
 const { createWriteStream } = require('fs');
+const { performance: { now } } = require('perf_hooks');
 
 (async () => await rethink.connect())();
 
 const downloading = [];
 
 process.on('message', message => {
-	console.log(message);
+	const start = now();
 	if (message.command === 'download' && !message.noReturn) {
 		const currentlyDownloading = downloading.includes(message.id);
 		if (!currentlyDownloading) downloading.push(message.id);
@@ -35,8 +36,8 @@ process.on('message', message => {
 
 		const chunks = [];
 
-		if (currentlyDownloading) console.log('Downloading, but not writing.');
-		else console.log('Downloading and writing.');
+		if (currentlyDownloading) process.send({ type: 'log', data: `Already saving ${message.id}. Downloading instead.` });
+		else process.send({ type: 'log', data: `Downloading and writing ${message.id} to the database.` });
 
 		if (!currentlyDownloading) {
 			muxer.on('data', chunk => {
@@ -45,15 +46,17 @@ process.on('message', message => {
 		}
 
 		muxer.on('end', async () => {
+			const downloadTime = now() - start;
+
 			downloading.splice(downloading.indexOf(message.id));
-			console.log('Downloading done.');
 			if (!currentlyDownloading) {
 				await rethink.table('audio').insert({
 					id: message.id,
 					files: chunks
 				});
-				console.log('Data written.');
-			}
+				const writeTime = now() - start;
+				process.send({ type: 'log', data: `Downloaded ${message.id} in ${downloadTime}ms. Written in: ${writeTime}ms.`, downloadTime, writeTime });
+			} else { process.send({ type: 'log', data: `Downloaded ${message.id} in ${downloadTime}ms.`, downloadTime }); }
 
 			pipe.emit('end');
 
@@ -91,6 +94,9 @@ process.on('message', message => {
 				id: message.id,
 				files: _chunks
 			});
+			const writeTime = now() - start;
+			process.send({ type: 'log', data: `[QUEUE] Saved ${message.id} to the database in ${writeTime}ms.`, writeTime });
+
 			process.send({ done: true, id: message.id, pipeIndex: message.pipe });
 		});
 	}

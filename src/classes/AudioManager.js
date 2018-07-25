@@ -26,6 +26,8 @@ class AudioManager {
 			queued: [],
 			openPipes: []
 		};
+		this.downloadTimes = [];
+		this.writeTimes = [];
 	}
 
 	async init() {
@@ -58,13 +60,23 @@ class AudioManager {
 			this.queue.thread.on('message', message => {
 				if (message.done) {
 					this.queue.openPipes.push(message.pipeIndex);
+				} else if (message.type === 'log') {
+					this.client.console.write([message.data], 'thread');
+					if (message.downloadTime) this.downloadTimes.push(message.downloadTime);
+					if (message.writeTime) this.writeTimes.push(message.writeTime);
 				}
 			});
 			this.queue.openPipes = openPipes;
 		}
 
 		thread.on('message', message => {
-			if (message.done) this.threads[0].openPipes.push(message.pipeIndex);
+			if (message.done) {
+				this.threads[0].openPipes.push(message.pipeIndex);
+			} else if (message.type === 'log') {
+				this.client.console.write([message.data], 'thread');
+				if (message.downloadTime) this.downloadTimes.push(message.downloadTime);
+				if (message.writeTime) this.writeTimes.push(message.writeTime);
+			}
 		});
 
 		this.threads.push({ thread, openPipes });
@@ -98,7 +110,13 @@ class AudioManager {
 				const forked = fork(join(process.cwd(), 'src/classes/DownCoder'), [], { stdio: [process.stdin, process.stdout, process.stderr, 'ipc', ...pipeArgs] });
 				const index = this.threads.push({ thread: forked, newPipes }) - 1;
 				forked.on('message', message => {
-					if (message.done) this.threads[index].openPipes.push(message.pipeIndex);
+					if (message.done) {
+						this.threads[index].openPipes.push(message.pipeIndex);
+					} else if (message.type === 'log') {
+						this.client.console.write([message.data], 'thread');
+						if (message.downloadTime) this.downloadTimes.push(message.downloadTime);
+						if (message.writeTime) this.writeTimes.push(message.writeTime);
+					}
 				});
 				downCoder = forked;
 
@@ -134,6 +152,14 @@ class AudioManager {
 
 			this.queue.thread.send({ command: 'download', id, song, pipe, noReturn: true });
 		}
+	}
+
+	get cacheSize() {
+		let size;
+		for (const data of this.cache.values()) {
+			size = data.reduce((acc, curr) => acc + curr.byteLength, 0);
+		}
+		return size;
 	}
 
 }
