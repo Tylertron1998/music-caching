@@ -4,7 +4,7 @@ module.exports = class extends Event {
 
 	async run() {
 		await this.client.audioManager.init();
-		this.client.console.log(['Audio Manager ready.'], 'thread');
+		this.client.console.write(['Audio Manager ready.'], 'thread');
 	}
 
 

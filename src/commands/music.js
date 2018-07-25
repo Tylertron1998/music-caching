@@ -34,11 +34,14 @@ module.exports = class extends Command {
 	async stats(message) {
 		const msg = await message.sendMessage('loading stats...');
 		const embed = new MessageEmbed()
+			.setColor('#5c00ff')
 			.setTitle('Stats')
 			.addField('Cached songs:', this.client.audioManager.cache.size, true)
 			.addField('Cache size:', `${(this.client.audioManager.cacheSize / 1024 / 1024).toFixed(2)}MB`, true)
-			.addField('Average download time:', `${(this.client.audioManager.downloadTimes.reduce(average, 0) / this.client.audioManager.downloadTimes.length).toFixed(4) * 1000}s`)
-			.addField('Average write time:', `${(this.client.audioManager.writeTimes.reduce(average, 0) / this.client.audioManager.writeTimes.length).toFixed(4) * 1000}s`, true)
+			.addField('Average download time:',
+				`${this.client.audioManager.downloadTimes.length ? (this.client.audioManager.downloadTimes.reduce(average, 0) / this.client.audioManager.downloadTimes.length).toFixed(4) * 1000 : 0}s`)
+			.addField('Average write time:',
+				`${this.client.audioManager.writeTimes.length ? (this.client.audioManager.writeTimes.reduce(average, 0) / this.client.audioManager.writeTimes.length).toFixed(4) * 1000 : 0}s`, true)
 			.addField('Current threads:', `${this.client.audioManager.threads.length}/${this.client.audioManager.maxThreads}`);
 
 		let index = 0;
