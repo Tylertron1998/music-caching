@@ -1,5 +1,6 @@
 const { Command } = require('klasa');
 const { MessageEmbed } = require('discord.js');
+const ytdl = require('ytdl-core');
 
 const average = (acc, curr) => curr + acc;
 
@@ -19,14 +20,14 @@ module.exports = class extends Command {
 
 	async add(message, [...song]) {
 		this.queue.push(song.join(' '));
-		return message.sendMessage(`Okay, added: ${song.join(' ')}.`);
+		return message.sendMessage(`Okay, added: ${(await ytdl.getInfo(song.join(' '))).title} to the queue.`);
 	}
 
 	async play(message) {
-		message.member.voiceChannel.join().then(conn => {
-			this.dispatcher = conn.play(this.client.audioManager.playTrack(this.queue.shift()));
-			this.dispatcher.on('end', () => {
-				if (this.queue.length) this.dispatcher = conn.play(this.client.audioManager.playTrack(this.queue.shift()));
+		message.member.voiceChannel.join().then(async conn => {
+			this.dispatcher = conn.play(await this.client.audioManager.playTrack(this.queue.shift()));
+			this.dispatcher.on('end', async () => {
+				if (this.queue.length) this.dispatcher = conn.play(await this.client.audioManager.playTrack(this.queue.shift()));
 			});
 		});
 	}
