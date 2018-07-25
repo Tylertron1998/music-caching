@@ -26,9 +26,6 @@ module.exports = class extends Command {
 	async play(message) {
 		message.member.voiceChannel.join().then(async conn => {
 			this.dispatcher = conn.play(await this.client.audioManager.playTrack(this.queue.shift()));
-			this.dispatcher.on('end', async () => {
-				if (this.queue.length) this.dispatcher = conn.play(await this.client.audioManager.playTrack(this.queue.shift()));
-			});
 		});
 	}
 

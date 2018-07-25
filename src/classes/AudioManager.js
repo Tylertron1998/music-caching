@@ -94,7 +94,6 @@ class AudioManager {
 			this.client.console.write([`Playing ${id} from cache!`], 'thread');
 			return new ArrayBufferStream(this.cache.get(id));
 		} else {
-			this.client.console.write([`Downloading ${id}.`], 'thread');
 			return this.doDownload(song, id);
 		}
 	}

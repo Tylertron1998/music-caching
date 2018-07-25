@@ -55,8 +55,8 @@ process.on('message', message => {
 					files: chunks
 				});
 				const writeTime = now() - start;
-				process.send({ type: 'log', data: `Downloaded ${message.id} in ${downloadTime}ms. Written in: ${writeTime}ms.`, downloadTime, writeTime });
-			} else { process.send({ type: 'log', data: `Downloaded ${message.id} in ${downloadTime}ms.`, downloadTime }); }
+				process.send({ type: 'log', data: `Downloaded ${message.id} in ${downloadTime.toFixed(2) / 1000}s. Written in: ${writeTime.toFixed(2) / 1000}s.`, downloadTime, writeTime });
+			} else { process.send({ type: 'log', data: `Downloaded ${message.id} in ${downloadTime.toFixed(2) / 1000}s`, downloadTime }); }
 
 			pipe.emit('end');
 
