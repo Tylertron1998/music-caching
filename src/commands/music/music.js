@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const ytdl = require('ytdl-core');
 const ytpl = require('ytpl');
 
-const average = (acc, curr) => curr += acc; //eslint-disable-line
+const average = (acc, curr) => curr + acc; //eslint-disable-line
 
 /* eslint-disable no-extra-parens */
 module.exports = class extends Command {
@@ -26,9 +26,8 @@ module.exports = class extends Command {
 	}
 
 	async play(message) {
-		message.member.voiceChannel.join().then(async conn => {
-			this.dispatcher = conn.play(await this.client.audioManager.playTrack(this.queue.shift()));
-		});
+		const conn = await message.member.voiceChannel.join();
+		this.dispatcher = conn.play(await this.client.audioManager.playTrack(this.queue.shift()));
 	}
 
 	async stats(message) {
@@ -49,9 +48,9 @@ module.exports = class extends Command {
 			.addField('DB Size: ', `${dbSize.toFixed(2)}MB`)
 			.addField('Average download time:',
 				`${this.client.audioManager.downloadTimes.length ? (
-					(this.client.audioManager.downloadTimes.reduce(average, 0) / this.client.audioManager.downloadTimes.length) / 1000).toFixed(2) / 1000 : 0}s`)
+					(this.client.audioManager.downloadTimes.reduce(average, 0) / this.client.audioManager.downloadTimes.length) / 1000).toFixed(2) : 0}s`)
 			.addField('Average write time:',
-				`${this.client.audioManager.writeTimes.length ? ((this.client.audioManager.writeTimes.reduce(average, 0) / this.client.audioManager.writeTimes.length) / 1000).toFixed(4) : 0}s`, true)
+				`${this.client.audioManager.writeTimes.length ? ((this.client.audioManager.writeTimes.reduce(average, 0) / this.client.audioManager.writeTimes.length) / 1000).toFixed(2) : 0}s`, true)
 			.addField('Current threads:', `${this.client.audioManager.threads.length}/${this.client.audioManager.maxThreads}`);
 
 		let index = 0;
