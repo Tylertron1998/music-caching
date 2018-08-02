@@ -28,7 +28,13 @@ process.on('message', message => {
 
 		const muxer = new prism.OggOpusMuxer();
 
-		const vid = ytdl(message.url, { quality: 'highestaudio' });
+		let vid;
+
+		try {
+			vid = ytdl(message.url, { quality: 'highestaudio' });
+		} catch (error) {
+			console.error(error);
+		}
 
 		const pipe = createWriteStream(null, { fd: message.pipe, autoClose: true });
 
@@ -54,7 +60,7 @@ process.on('message', message => {
 					id: message.id,
 					files: chunks
 				});
-				const writeTime = now() - start;
+				const writeTime = now() - downloadTime;
 				process.send({ type: 'log', data: `Downloaded ${message.id} in ${downloadTime.toFixed(2) / 1000}s. Written in: ${writeTime.toFixed(2) / 1000}s.`, downloadTime, writeTime });
 			} else { process.send({ type: 'log', data: `Downloaded ${message.id} in ${downloadTime.toFixed(2) / 1000}s`, downloadTime }); }
 
@@ -67,7 +73,13 @@ process.on('message', message => {
 
 		const _chunks = [];
 
-		const vid = ytdl(message.url, { quality: 'highestaudio' });
+		let vid;
+
+		try {
+			vid = ytdl(message.url, { quality: 'highestaudio' });
+		} catch (error) {
+			console.error(error);
+		}
 
 		const ffmpeg = new prism.FFmpeg({
 			args: [

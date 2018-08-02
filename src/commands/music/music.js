@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const ytdl = require('ytdl-core');
 const ytpl = require('ytpl');
 
-const average = (acc, curr) => curr + acc;
+const average = (acc, curr) => curr += acc; //eslint-disable-line
 
 /* eslint-disable no-extra-parens */
 module.exports = class extends Command {
@@ -33,15 +33,25 @@ module.exports = class extends Command {
 
 	async stats(message) {
 		const msg = await message.sendMessage('loading stats...');
+
+		const dbSize = await this.client.providers.default.db.db('rethinkdb').table('stats')
+			.filter({ table: 'audio' })
+			.map(doc => doc('storage_engine')('disk')('space_usage')('data_bytes').default(0))
+			.sum().div(1024)
+			.div(1024)
+			.default(0);
+
 		const embed = new MessageEmbed()
 			.setColor('#5c00ff')
 			.setTitle('Stats')
 			.addField('Cached songs:', this.client.audioManager.cache.size, true)
 			.addField('Cache size:', `${(this.client.audioManager.cacheSize / 1024 / 1024).toFixed(2)}MB`, true)
+			.addField('DB Size: ', `${dbSize.toFixed(2)}MB`)
 			.addField('Average download time:',
-				`${this.client.audioManager.downloadTimes.length ? ((this.client.audioManager.downloadTimes.reduce(average, 0) / this.client.audioManager.downloadTimes.length).toFixed(4)) * 1000 : 0}s`)
+				`${this.client.audioManager.downloadTimes.length ? (
+					(this.client.audioManager.downloadTimes.reduce(average, 0) / this.client.audioManager.downloadTimes.length) / 1000).toFixed(2) / 1000 : 0}s`)
 			.addField('Average write time:',
-				`${this.client.audioManager.writeTimes.length ? ((this.client.audioManager.writeTimes.reduce(average, 0) / this.client.audioManager.writeTimes.length)).toFixed(4) * 1000 : 0}s`, true)
+				`${this.client.audioManager.writeTimes.length ? ((this.client.audioManager.writeTimes.reduce(average, 0) / this.client.audioManager.writeTimes.length) / 1000).toFixed(4) : 0}s`, true)
 			.addField('Current threads:', `${this.client.audioManager.threads.length}/${this.client.audioManager.maxThreads}`);
 
 		let index = 0;

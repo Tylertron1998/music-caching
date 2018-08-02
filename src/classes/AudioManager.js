@@ -154,10 +154,9 @@ class AudioManager {
 	}
 
 	get cacheSize() {
-		if (!this.cache.size) return 0;
-		let size;
+		let size = 0;
 		for (const data of this.cache.values()) {
-			size = data.reduce((acc, curr) => acc + curr.byteLength, 0);
+			size += data.reduce((acc, curr) => acc += curr.byteLength, 0); // eslint-disable-line
 		}
 		return size;
 	}
